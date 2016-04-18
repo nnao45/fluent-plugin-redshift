@@ -213,7 +213,8 @@ class RedshiftOutput < BufferedOutput
           tsv_text = hash_to_table_text(redshift_table_columns, hash, delimiter)
           gzw.write(tsv_text) if tsv_text and not tsv_text.empty?
         rescue => e
-          $log.error format_log("failed to create table text from #{@file_type}. text=(#{record[@record_log_tag]})"), :error=>e.to_s
+          text = record.is_a?(Hash) ? record[@record_log_tag] : record
+          $log.error format_log("failed to create table text from #{@file_type}. text=(#{text})"), :error=>e.to_s
           $log.error_backtrace
         end
       end
