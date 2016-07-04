@@ -22,8 +22,9 @@ class RedshiftOutput < BufferedOutput
 
   config_param :record_log_tag, :string, :default => 'log'
   # s3
-  config_param :aws_key_id, :string, :secret => true
-  config_param :aws_sec_key, :string, :secret => true
+  config_param :aws_key_id, :string, :secret => true, :default => nil
+  config_param :aws_sec_key, :string, :secret => true, :default => nil
+  config_param :aws_iam_role, :string, :secret => true, :default => nil
   config_param :s3_bucket, :string
   config_param :s3_endpoint, :string, :default => nil
   config_param :path, :string, :default => ""
@@ -53,6 +54,9 @@ class RedshiftOutput < BufferedOutput
 
   def configure(conf)
     super
+    if !check_credentials
+      raise ConfigError, "aws_key_id and aws_sec_key is required. or, use aws_iam_role instead."
+    end
     @path = "#{@path}/" unless @path.end_with?('/') # append last slash
     @path = @path[1..-1] if @path.start_with?('/')  # remove head slash
     @utc = true if conf['utc']
@@ -80,10 +84,13 @@ class RedshiftOutput < BufferedOutput
   def start
     super
     # init s3 conf
-    options = {
-      :access_key_id     => @aws_key_id,
-      :secret_access_key => @aws_sec_key
-    }
+    options = {}
+    if @aws_key_id && @aws_sec_key
+      options = {
+        :access_key_id     => @aws_key_id,
+        :secret_access_key => @aws_sec_key
+      }
+    end
     options[:s3_endpoint] = @s3_endpoint if @s3_endpoint
     @s3 = AWS::S3.new(options)
     @bucket = @s3.buckets[@s3_bucket]
@@ -131,7 +138,7 @@ class RedshiftOutput < BufferedOutput
 
     # copy gz on s3 to redshift
     s3_uri = "s3://#{@s3_bucket}/#{s3path}"
-    sql = @copy_sql_template % [s3_uri, @aws_sec_key]
+    sql = @copy_sql_template % s3_uri
     $log.debug format_log("start copying. s3_uri=#{s3_uri}")
 
     begin
@@ -161,7 +168,12 @@ class RedshiftOutput < BufferedOutput
                    else
                      ''
                    end
-   "copy #{@table_name_with_schema}#{copy_columns} from '%s' CREDENTIALS 'aws_access_key_id=#{@aws_key_id};aws_secret_access_key=%s' delimiter '#{@delimiter}' GZIP ESCAPE #{@redshift_copy_base_options} #{@redshift_copy_options};"
+    credentials = if @aws_key_id && @aws_sec_key
+                    "CREDENTIALS 'aws_access_key_id=#{@aws_key_id};aws_secret_access_key=#{@aws_sec_key}'"
+                  else
+                    "CREDENTIALS 'aws_iam_role=#{@aws_iam_role}'"
+                  end
+   "copy #{@table_name_with_schema}#{copy_columns} from '%s' #{credentials} delimiter '#{@delimiter}' GZIP ESCAPE #{@redshift_copy_base_options} #{@redshift_copy_options};"
   end
 
 
@@ -286,6 +298,16 @@ class RedshiftOutput < BufferedOutput
       i += 1
     end while bucket.objects[s3path].exists?
     s3path
+  end
+
+  def check_credentials
+    if @aws_key_id && @aws_sec_key
+      true
+    elsif @aws_iam_role
+      true
+    else
+      false
+    end
   end
 
   class RedshiftError < StandardError

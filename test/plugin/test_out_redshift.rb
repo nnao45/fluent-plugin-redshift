@@ -20,6 +20,7 @@ class RedshiftOutputTest < Test::Unit::TestCase
   CONFIG_BASE= %[
     aws_key_id test_key_id
     aws_sec_key test_sec_key
+    aws_iam_role test_iam_role
     s3_bucket test_bucket
     path log
     redshift_host test_host
@@ -96,6 +97,7 @@ class RedshiftOutputTest < Test::Unit::TestCase
     d = create_driver(CONFIG_CSV)
     assert_equal "test_key_id", d.instance.aws_key_id
     assert_equal "test_sec_key", d.instance.aws_sec_key
+    assert_equal "test_iam_role", d.instance.aws_iam_role
     assert_equal "test_bucket", d.instance.s3_bucket
     assert_equal "log/", d.instance.path
     assert_equal "test_host", d.instance.redshift_host
