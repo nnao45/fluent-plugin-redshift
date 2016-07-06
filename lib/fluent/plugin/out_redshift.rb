@@ -22,32 +22,71 @@ class RedshiftOutput < BufferedOutput
 
   config_param :record_log_tag, :string, :default => 'log'
   # s3
-  config_param :aws_key_id, :string, :secret => true
-  config_param :aws_sec_key, :string, :secret => true
-  config_param :s3_bucket, :string
-  config_param :s3_endpoint, :string, :default => nil
-  config_param :path, :string, :default => ""
-  config_param :timestamp_key_format, :string, :default => 'year=%Y/month=%m/day=%d/hour=%H/%Y%m%d-%H%M'
+  config_param :aws_key_id, :string, :secret => true,
+               :desc => "AWS access key id to access s3 bucket."
+  config_param :aws_sec_key, :string, :secret => true,
+               :desc => "AWS secret key id to access s3 bucket."
+  config_param :s3_bucket, :string,
+               :desc => <<-DESC
+S3 bucket name.
+S3 bucket must be same as the region of your Redshift cluster.
+
+DESC
+  config_param :s3_endpoint, :string, :default => nil,
+               :desc => "S3 endpoint."
+  config_param :path, :string, :default => "",
+               :desc => "S3 path to input."
+  config_param :timestamp_key_format, :string, :default => 'year=%Y/month=%m/day=%d/hour=%H/%Y%m%d-%H%M',
+               :desc => <<-DESC
+The format of the object keys.
+It can include date-format directives.
+DESC
   config_param :utc, :bool, :default => false
-  config_param :s3_server_side_encryption, :string, :default => nil  # only 'aes256' is supported
+  config_param :s3_server_side_encryption, :string, :default => nil,
+               :desc => "S3 Server-Side Encryption (Only aes256 is supported)."
   # redshift
-  config_param :redshift_host, :string
-  config_param :redshift_port, :integer, :default => 5439
-  config_param :redshift_dbname, :string
-  config_param :redshift_user, :string
-  config_param :redshift_password, :string, :secret => true
-  config_param :redshift_tablename, :string
-  config_param :redshift_schemaname, :string, :default => nil
+  config_param :redshift_host, :string,
+               :desc => "The end point(or hostname) of your Amazon Redshift cluster."
+  config_param :redshift_port, :integer, :default => 5439,
+               :desc => "Port number."
+  config_param :redshift_dbname, :string,
+               :desc => "Database name."
+  config_param :redshift_user, :string,
+               :desc => "User name."
+  config_param :redshift_password, :string, :secret => true,
+               :desc => "Password for the user name."
+  config_param :redshift_tablename, :string,
+               :desc => "Table name to store data."
+  config_param :redshift_schemaname, :string, :default => nil,
+               :desc => <<-DESC
+Schema name to store data. By default, this option is not
+Set and find table without schema as your own search_path.
+DESC
   config_param :redshift_copy_base_options, :string , :default => "FILLRECORD ACCEPTANYDATE TRUNCATECOLUMNS"
   config_param :redshift_copy_options, :string , :default => nil
-  config_param :redshift_connect_timeout, :integer, :default => 10
-  config_param :redshift_copy_columns, :string, :default => nil  # comma separated format, ex) id,name,age
-
+  config_param :redshift_connect_timeout, :integer, :default => 10,
+               :desc => "Maximum time to wait for connection to succeed."
+  config_param :redshift_copy_columns, :string, :default => nil,
+               :desc => <<-DESC
+Columns for copying.
+Value needs to be comma-separated like id,name,age
+DESC
   # file format
-  config_param :file_type, :string, :default => nil  # json, tsv, csv, msgpack
-  config_param :delimiter, :string, :default => nil
+  config_param :file_type, :string, :default => nil,
+               :desc => "File format of the source data. csv, tsv, msgpack or json are available."
+  config_param :delimiter, :string, :default => nil,
+               :desc => <<-DESC
+Delimiter of the source data.
+This option will be ignored if file_type is specified.
+DESC
   # maintenance
-  config_param :maintenance_file_path, :string, :default => nil
+  config_param :maintenance_file_path, :string, :default => nil,
+               :desc => <<-DESC
+Path of maintenance file. plugin skip processing and keep retrying
+during a file existing in this file path.
+To avoid data loss due to too many retries caused by long mainenance,
+setting retry_limit and retry_wait is recommended.
+DESC
   # for debug
   config_param :log_suffix, :string, :default => ''
 
