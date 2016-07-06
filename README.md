@@ -19,6 +19,9 @@ Format:
         # s3 (for copying data to redshift)
         aws_key_id YOUR_AWS_KEY_ID
         aws_sec_key YOUR_AWS_SECRET_KEY
+        ## or Use IAM Role instead of credentials.
+        aws_iam_role arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME
+
         s3_bucket YOUR_S3_BUCKET
         s3_endpoint YOUR_S3_BUCKET_END_POINT
         path YOUR_S3_PATH
@@ -89,9 +92,11 @@ Example (watch and upload json formatted apache log):
 
 + `type` (required) : The value must be `redshift`.
 
-+ `aws_key_id` (required) : AWS access key id to access s3 bucket.
++ `aws_key_id` : AWS access key id to access s3 bucket.
 
-+ `aws_sec_key` (required) : AWS secret key id to access s3 bucket.
++ `aws_sec_key` : AWS secret key id to access s3 bucket.
+
++ `aws_iam_role` : AWS IAM Role name to access s3 bucket and copy into redshift.
 
 + `s3_bucket` (required) : s3 bucket name. S3 bucket must be same as the region of your Redshift cluster.
 
