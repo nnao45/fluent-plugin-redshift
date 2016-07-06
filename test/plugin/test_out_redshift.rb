@@ -176,6 +176,10 @@ class RedshiftOutputTest < Test::Unit::TestCase
     assert_equal %w(id name age created_at), d.instance.redshift_copy_columns
     assert_match /^copy test_table\(id,name,age,created_at\) from/, d.instance.instance_variable_get("@copy_sql_template")
   end
+  def test_configure_s3_server_side_encryption
+    d = create_driver(CONFIG_CSV + "\n  s3_server_side_encryption aes256")
+    assert_equal :aes256, d.instance.s3_server_side_encryption
+  end
 
   def emit_csv(d)
     d.emit(RECORD_CSV_A, DEFAULT_TIME)
@@ -282,7 +286,8 @@ class RedshiftOutputTest < Test::Unit::TestCase
         }
         assert_equal expected_data, data
       },
-      :acl => :bucket_owner_full_control
+      :acl => :bucket_owner_full_control,
+      :server_side_encryption => nil
     ).and_return { true }
 
     # create mock of s3 object collection
