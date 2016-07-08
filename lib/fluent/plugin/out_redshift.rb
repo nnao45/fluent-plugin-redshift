@@ -64,7 +64,7 @@ DESC
 Schema name to store data. By default, this option is not
 Set and find table without schema as your own search_path.
 DESC
-  config_param :redshift_copy_base_options, :string , :default => "FILLRECORD ACCEPTANYDATE TRUNCATECOLUMNS"
+  config_param :redshift_copy_base_options, :string , :default => "ESCAPE FILLRECORD ACCEPTANYDATE TRUNCATECOLUMNS"
   config_param :redshift_copy_options, :string , :default => nil
   config_param :redshift_connect_timeout, :integer, :default => 10,
                :desc => "Maximum time to wait for connection to succeed."
@@ -214,7 +214,7 @@ DESC
                   else
                     "CREDENTIALS 'aws_iam_role=#{@aws_iam_role}'"
                   end
-   "copy #{@table_name_with_schema}#{copy_columns} from '%s' #{credentials} delimiter '#{@delimiter}' GZIP ESCAPE #{@redshift_copy_base_options} #{@redshift_copy_options};"
+   "copy #{@table_name_with_schema}#{copy_columns} from '%s' #{credentials} delimiter '#{@delimiter}' GZIP #{@redshift_copy_base_options} #{@redshift_copy_options};"
   end
 
 
