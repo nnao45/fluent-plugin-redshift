@@ -114,6 +114,7 @@ class RedshiftOutputTest < Test::Unit::TestCase
     assert_equal true, d.instance.utc
     assert_equal MAINTENANCE_FILE_PATH_FOR_TEST, d.instance.maintenance_file_path
     assert_equal nil, d.instance.redshift_copy_columns
+    assert_equal false, d.instance.instance_variable_get("@copy_sql_template").include?('ESCAPE')
   end
   def test_configure_with_schemaname
     d = create_driver(CONFIG_JSON_WITH_SCHEMA)
@@ -147,16 +148,19 @@ class RedshiftOutputTest < Test::Unit::TestCase
     d1 = create_driver(CONFIG_TSV)
     assert_equal "tsv", d1.instance.file_type
     assert_equal "\t", d1.instance.delimiter
+    assert_equal false, d1.instance.instance_variable_get("@copy_sql_template").include?('ESCAPE')
   end
   def test_configure_json
     d2 = create_driver(CONFIG_JSON)
     assert_equal "json", d2.instance.file_type
     assert_equal "\t", d2.instance.delimiter
+    assert_match /^copy test_table.*ESCAPE.*/, d2.instance.instance_variable_get("@copy_sql_template")
   end
   def test_configure_msgpack
     d2 = create_driver(CONFIG_MSGPACK)
     assert_equal "msgpack", d2.instance.file_type
     assert_equal "\t", d2.instance.delimiter
+    assert_match /^copy test_table.*ESCAPE.*/, d2.instance.instance_variable_get("@copy_sql_template")
   end
   def test_configure_original_file_type
     d3 = create_driver(CONFIG_PIPE_DELIMITER)
