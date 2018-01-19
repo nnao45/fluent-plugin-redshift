@@ -11,7 +11,7 @@ class RedshiftOutput < BufferedOutput
 
   def initialize
     super
-    require 'aws-sdk-v1'
+    require 'aws-sdk-s3'
     require 'zlib'
     require 'time'
     require 'tempfile'
@@ -131,9 +131,9 @@ DESC
         :secret_access_key => @aws_sec_key
       }
     end
-    options[:s3_endpoint] = @s3_endpoint if @s3_endpoint
-    @s3 = AWS::S3.new(options)
-    @bucket = @s3.buckets[@s3_bucket]
+    options[:endpoint] = @s3_endpoint if @s3_endpoint
+    @s3 = AWS::S3::Client.new(options)
+    @bucket = @s3.bucket(@s3_bucket)
     @redshift_connection = RedshiftConnection.new(@db_conf)
   end
 
@@ -170,8 +170,8 @@ DESC
     s3path = create_s3path(@bucket, @path)
 
     # upload gz to s3
-    @bucket.objects[s3path].write(Pathname.new(tmp.path),
-                                  :acl => :bucket_owner_full_control,
+    @bucket.object(s3path).put_object(:body => Pathname.new(tmp.path),
+                                  :acl => "bucket_owner_full_control",
                                   :server_side_encryption => @s3_server_side_encryption)
 
     # close temp file
@@ -341,7 +341,7 @@ DESC
       suffix = "_#{'%02d' % i}"
       s3path = "#{path}#{timestamp_key}#{suffix}.gz"
       i += 1
-    end while bucket.objects[s3path].exists?
+    end while bucket.object(s3path).exists?
     s3path
   end
 
