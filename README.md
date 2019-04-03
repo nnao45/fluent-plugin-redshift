@@ -27,6 +27,7 @@ Format:
         path YOUR_S3_PATH
         timestamp_key_format year=%Y/month=%m/day=%d/hour=%H/%Y%m%d-%H%M
         s3_server_side_encryption S3_SERVER_SIDE_ENCRYPTION
+        s3_signature_version S3_SIGNATURE_VERSION
 
         # redshift
         redshift_host YOUR_AMAZON_REDSHIFT_CLUSTER_END_POINT
@@ -101,6 +102,8 @@ Example (watch and upload json formatted apache log):
 + `s3_bucket` (required) : s3 bucket name. S3 bucket must be same as the region of your Redshift cluster.
 
 + `s3_endpoint` : s3 endpoint.
+
++ `s3_signature_version` : s3 signature version (Only v2 or v4 is supported)
 
 + `path` (required) : s3 path to input.
 

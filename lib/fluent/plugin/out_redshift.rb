@@ -28,6 +28,8 @@ class RedshiftOutput < BufferedOutput
                :desc => "AWS secret key id to access s3 bucket."
   config_param :aws_iam_role, :string, :secret => true, :default => nil,
                :desc => "AWS IAM Role to access s3 bucket."
+  config_param :s3_signature_version, :string, :default => nil,
+               :desc => "AWS Signature version for API Request"
   config_param :s3_bucket, :string,
                :desc => <<-DESC
 S3 bucket name.
@@ -132,6 +134,7 @@ DESC
       }
     end
     options[:endpoint] = @s3_endpoint if @s3_endpoint
+    options[:s3_signature_version] = @s3_signature_version if @s3_signature_version
     @s3 = AWS::S3::Client.new(options)
     @bucket = @s3.bucket(@s3_bucket)
     @redshift_connection = RedshiftConnection.new(@db_conf)
